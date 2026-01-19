@@ -3,6 +3,37 @@ import { useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Trophy, Medal, Award } from 'lucide-react';
 
+// Memoized Row Component
+const LeaderboardRow = React.memo(({ entry, index, rankStyle, rankIcon }) => (
+    <div
+        style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '1rem 1.5rem',
+            borderRadius: '12px',
+            ...rankStyle
+        }}
+    >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            {rankIcon}
+            <span style={{ color: 'var(--text-main)', fontWeight: index < 3 ? 'bold' : 'normal' }}>
+                {entry.nickname}
+            </span>
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                {entry.grade}
+            </span>
+        </div>
+        <div style={{
+            fontSize: index < 3 ? '1.5rem' : '1.2rem',
+            fontWeight: 'bold',
+            color: index === 0 ? '#fbbf24' : 'var(--accent)'
+        }}>
+            {entry.score}
+        </div>
+    </div>
+));
+
 const Leaderboard = () => {
     const [scores, setScores] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -99,34 +130,13 @@ const Leaderboard = () => {
             ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                     {filteredScores.map((entry, index) => (
-                        <div
+                        <LeaderboardRow
                             key={entry.id}
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'space-between',
-                                padding: '1rem 1.5rem',
-                                borderRadius: '12px',
-                                ...getRankStyle(index)
-                            }}
-                        >
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                {getRankIcon(index)}
-                                <span style={{ color: 'var(--text-main)', fontWeight: index < 3 ? 'bold' : 'normal' }}>
-                                    {entry.nickname}
-                                </span>
-                                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                                    {entry.grade}
-                                </span>
-                            </div>
-                            <div style={{
-                                fontSize: index < 3 ? '1.5rem' : '1.2rem',
-                                fontWeight: 'bold',
-                                color: index === 0 ? '#fbbf24' : 'var(--accent)'
-                            }}>
-                                {entry.score}
-                            </div>
-                        </div>
+                            entry={entry}
+                            index={index}
+                            rankStyle={getRankStyle(index)}
+                            rankIcon={getRankIcon(index)}
+                        />
                     ))}
                 </div>
             )}

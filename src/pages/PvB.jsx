@@ -34,14 +34,11 @@ const gradeConfigs = {
 const PvB = () => {
     const [selectedGrade, setSelectedGrade] = useState(null);
     const [gameState, setGameState] = useState('select'); // select, playing, result
-    const [score, setScore] = useState(0); // Only tracking wins in local state for now
-    const [botScore, setBotScore] = useState(0);
     const [timeLeft, setTimeLeft] = useState(0);
     const [problem, setProblem] = useState({ display: '', answer: 0 });
     const [userAnswer, setUserAnswer] = useState('');
-    const [userResult, setUserResult] = useState(null); // 'correct', 'incorrect'
-    const [botResult, setBotResult] = useState(null); // 'correct', 'incorrect'
-    const [roundWinner, setRoundWinner] = useState(null); // 'player', 'bot', 'tie'
+    const [roundResult, setRoundResult] = useState(null); // 'player', 'bot', 'tie'
+    const [winner, setWinner] = useState(null); // 'player', 'bot'
     const [playerWins, setPlayerWins] = useState(0);
     const [botWins, setBotWins] = useState(0);
 

@@ -33,11 +33,12 @@
 
 body {
   font-family: 'Outfit', sans-serif;
-  background: radial-gradient(ellipse at top left, var(--bg-gradient-start), var(--bg-gradient-end));
-  background-attachment: fixed;
+  background: var(--bg-gradient-start);
+  /* Solid color is faster */
   color: var(--text-main);
   min-height: 100vh;
   overflow-x: hidden;
+  /* background-attachment: fixed removed for performance on mobile */
 }
 
 /* Optimized Scrollbar */

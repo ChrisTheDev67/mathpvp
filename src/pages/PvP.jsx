@@ -6,10 +6,10 @@ import { ArrowLeft, Clock, Trophy, Lock, Key } from 'lucide-react';
 
 // Grade configurations
 const gradeConfigs = {
-    '1-2': { name: 'Grades 1-2', emoji: '🌟', maxNum: 20, operators: ['+', '-'] },
-    '3-5': { name: 'Grades 3-5', emoji: '🚀', maxMult: 12, operators: ['×', '÷', 'frac+', 'frac-'] },
-    '6-9': { name: 'Grades 6-9', emoji: '🔥', type: 'algebra' },
-    '10-12': { name: 'Grades 10-12', emoji: '🏆', type: 'advanced' }
+    '1-2': { name: 'Grades 1-2', emoji: '🌟', maxNum: 20, operators: ['+', '-'], duration: 60 }, // 1 minute
+    '3-5': { name: 'Grades 3-5', emoji: '🚀', maxMult: 12, operators: ['×', '÷', 'frac+', 'frac-'], duration: 120 }, // 2 minutes
+    '6-9': { name: 'Grades 6-9', emoji: '🔥', type: 'algebra', duration: 240 }, // 4 minutes
+    '10-12': { name: 'Grades 10-12', emoji: '🏆', type: 'advanced', duration: 300 } // 5 minutes
 };
 
 // Helper function to get GCD for simplifying fractions
@@ -22,7 +22,6 @@ const formatMixedNumber = (whole, num, denom) => {
     return `${whole} ${num}/${denom}`;
 };
 
-const GAME_DURATION = 10 * 60; // 10 minutes in seconds
 const COOLDOWN_HOURS = 24;
 const ADMIN_EMAIL = 'chris.vkim@icloud.com';
 
@@ -90,13 +89,9 @@ const PvP = () => {
 
     // Handle reset timer click
     const handleResetClick = async () => {
-        console.log('Reset clicked. User email:', user?.email, 'Admin email:', ADMIN_EMAIL);
-
         if (user?.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
             // Admin - reset instantly by email
-            console.log('Admin detected, resetting cooldown...');
             const { error } = await supabase.from('cooldowns').delete().eq('email', user.email.toLowerCase());
-            console.log('Delete result:', error ? error : 'Success');
 
             // Also clear localStorage
             localStorage.removeItem(`lottery_cooldown_${user.email.toLowerCase()}`);
@@ -210,7 +205,7 @@ const PvP = () => {
     const startGame = (grade) => {
         setSelectedGrade(grade);
         setScore(0);
-        setTimeLeft(GAME_DURATION);
+        setTimeLeft(gradeConfigs[grade].duration);
         setProblem(generateProblem(grade));
         setGameState('playing');
         setTimeout(() => inputRef.current?.focus(), 100);
