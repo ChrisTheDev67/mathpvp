@@ -29,7 +29,7 @@ const Navbar = () => {
       <div className="navbar-container">
         <Link to="/" className="navbar-logo text-gradient">
           <Calculator className="logo-icon" />
-          <span>Chris Helps</span>
+          <span>MathPvP</span>
         </Link>
 
         <div className="menu-icon" onClick={() => setIsOpen(!isOpen)}>
