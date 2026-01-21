@@ -1,52 +1,54 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Check, X, ArrowLeft, Bot, User, Trophy } from 'lucide-react';
+import { Check, X, ArrowLeft, Bot, User, Trophy, Swords } from 'lucide-react';
 
-// Grade configurations (same as practice)
+// Grade configurations
 const gradeConfigs = {
     '1-2': {
         name: 'Grades 1-2',
         emoji: '🌟',
         timer: 3,
         maxNum: 20,
-        operators: ['+', '-']
+        operators: ['+', '-'],
+        color: 'var(--primary)'
     },
     '3-5': {
         name: 'Grades 3-5',
         emoji: '🚀',
         timer: 4,
         maxMult: 12,
-        operators: ['×', '÷']
+        operators: ['×', '÷'],
+        color: 'var(--secondary)'
     },
     '6-9': {
         name: 'Grades 6-9',
         emoji: '🔥',
         timer: 5,
-        type: 'algebra'
+        type: 'algebra',
+        color: 'var(--warning)'
     },
     '10-12': {
         name: 'Grades 10-12',
         emoji: '🏆',
         timer: 7,
-        type: 'advanced'
+        type: 'advanced',
+        color: 'var(--accent)'
     }
 };
 
 const PvB = () => {
     const [selectedGrade, setSelectedGrade] = useState(null);
-    const [gameState, setGameState] = useState('select'); // select, playing, result
+    const [gameState, setGameState] = useState('select');
     const [timeLeft, setTimeLeft] = useState(0);
     const [problem, setProblem] = useState({ display: '', answer: 0 });
     const [userAnswer, setUserAnswer] = useState('');
-    const [roundResult, setRoundResult] = useState(null); // 'player', 'bot', 'tie'
-    const [winner, setWinner] = useState(null); // 'player', 'bot'
+    const [roundResult, setRoundResult] = useState(null);
+    const [winner, setWinner] = useState(null);
     const [playerWins, setPlayerWins] = useState(0);
     const [botWins, setBotWins] = useState(0);
 
     const inputRef = useRef(null);
     const timerRef = useRef(null);
-    const botTimerRef = useRef(null);
 
-    // Generate problem based on grade
     const generateProblem = (grade) => {
         const config = gradeConfigs[grade];
         let display, answer;
@@ -94,7 +96,6 @@ const PvB = () => {
         return { display, answer };
     };
 
-    // Start a new round
     const startRound = () => {
         const newProblem = generateProblem(selectedGrade);
         setProblem(newProblem);
@@ -105,7 +106,6 @@ const PvB = () => {
         setTimeout(() => inputRef.current?.focus(), 100);
     };
 
-    // Start game
     const startGame = (grade) => {
         setSelectedGrade(grade);
         setPlayerWins(0);
@@ -119,18 +119,15 @@ const PvB = () => {
         setTimeout(() => inputRef.current?.focus(), 100);
     };
 
-    // Timer effect
     useEffect(() => {
         if (gameState === 'playing' && timeLeft > 0) {
             timerRef.current = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
         } else if (gameState === 'playing' && timeLeft === 0) {
-            // Time's up - bot wins this round
             handleRoundEnd(false);
         }
         return () => clearTimeout(timerRef.current);
     }, [gameState, timeLeft]);
 
-    // Handle round end
     const handleRoundEnd = (playerWon) => {
         clearTimeout(timerRef.current);
         setGameState('result');
@@ -154,7 +151,6 @@ const PvB = () => {
         }
     };
 
-    // Handle answer submission
     const handleSubmit = (e) => {
         e.preventDefault();
         if (parseInt(userAnswer) === problem.answer) {
@@ -164,7 +160,6 @@ const PvB = () => {
         }
     };
 
-    // Go back
     const goBack = () => {
         clearTimeout(timerRef.current);
         setSelectedGrade(null);
@@ -176,10 +171,14 @@ const PvB = () => {
     // Grade Selection Screen
     if (gameState === 'select') {
         return (
-            <div className="glass-panel" style={{ maxWidth: '700px', margin: '0 auto', padding: '3rem', textAlign: 'center' }}>
-                <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>🤖</div>
-                <h2 className="text-gradient" style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>Math PvB</h2>
-                <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>Race against the bot! First to 2 wins!</p>
+            <div className="glass-panel animate-fade-in" style={{ maxWidth: '750px', margin: '0 auto', padding: '3rem', textAlign: 'center' }}>
+                <div style={{ marginBottom: '2rem' }}>
+                    <Bot size={56} style={{ color: 'var(--error)', marginBottom: '1rem' }} />
+                    <h2 style={{ fontSize: '2.5rem', fontWeight: '700', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+                        <span className="text-gradient">Player vs Bot</span>
+                    </h2>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>Race against the bot! First to 2 wins!</p>
+                </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
                     {Object.entries(gradeConfigs).map(([key, config]) => (
@@ -188,17 +187,37 @@ const PvB = () => {
                             onClick={() => startGame(key)}
                             style={{
                                 padding: '1.5rem',
-                                background: 'rgba(255,255,255,0.05)',
-                                border: '2px solid var(--glass-border)',
-                                borderRadius: '16px',
+                                background: 'var(--bg-darker)',
+                                border: '3px solid var(--border)',
+                                borderRadius: 'var(--radius-md)',
                                 cursor: 'pointer',
-                                transition: 'all 0.3s',
-                                textAlign: 'center'
+                                transition: 'all 0.2s ease',
+                                textAlign: 'center',
+                                boxShadow: '0 4px 0 rgba(0,0,0,0.3)'
+                            }}
+                            onMouseOver={(e) => {
+                                e.currentTarget.style.borderColor = config.color;
+                                e.currentTarget.style.transform = 'translateY(-4px)';
+                            }}
+                            onMouseOut={(e) => {
+                                e.currentTarget.style.borderColor = 'var(--border)';
+                                e.currentTarget.style.transform = 'translateY(0)';
                             }}
                         >
-                            <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>{config.emoji}</div>
-                            <div style={{ color: 'var(--text-main)', fontWeight: 'bold' }}>{config.name}</div>
-                            <div style={{ color: 'var(--accent)', fontSize: '0.85rem', marginTop: '0.25rem' }}>{config.timer}s timer</div>
+                            <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>{config.emoji}</div>
+                            <div style={{ color: 'var(--text-main)', fontWeight: '700', fontSize: '1.1rem', textTransform: 'uppercase' }}>{config.name}</div>
+                            <div style={{
+                                color: config.color,
+                                fontSize: '0.9rem',
+                                marginTop: '0.5rem',
+                                fontWeight: '600',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '0.25rem'
+                            }}>
+                                ⏱ {config.timer}s timer
+                            </div>
                         </button>
                     ))}
                 </div>
@@ -209,17 +228,26 @@ const PvB = () => {
     // Game Over Screen
     if (gameState === 'gameover') {
         return (
-            <div className="glass-panel" style={{ maxWidth: '500px', margin: '0 auto', padding: '3rem', textAlign: 'center' }}>
-                <div style={{ fontSize: '5rem', marginBottom: '1rem' }}>{winner === 'player' ? '🎉' : '😔'}</div>
-                <h2 style={{ fontSize: '2.5rem', marginBottom: '1rem', color: winner === 'player' ? '#4ade80' : '#f87171' }}>
+            <div className="glass-panel animate-fade-in" style={{ maxWidth: '500px', margin: '0 auto', padding: '3rem', textAlign: 'center' }}>
+                <div style={{ fontSize: '6rem', marginBottom: '1rem' }}>{winner === 'player' ? '🎉' : '🤖'}</div>
+                <h2 style={{
+                    fontSize: '2.5rem',
+                    fontWeight: '700',
+                    marginBottom: '1rem',
+                    color: winner === 'player' ? 'var(--primary)' : 'var(--error)',
+                    textTransform: 'uppercase',
+                    textShadow: winner === 'player' ? '0 0 20px var(--primary-glow)' : '0 0 20px rgba(255,71,87,0.4)'
+                }}>
                     {winner === 'player' ? 'You Win!' : 'Bot Wins!'}
                 </h2>
-                <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>
-                    Final Score: You {playerWins} - {botWins} Bot
+                <p style={{ color: 'var(--text-muted)', marginBottom: '2rem', fontSize: '1.25rem' }}>
+                    Final Score: <span style={{ color: 'var(--primary)', fontWeight: '700' }}>{playerWins}</span> - <span style={{ color: 'var(--error)', fontWeight: '700' }}>{botWins}</span>
                 </p>
-                <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-                    <button onClick={() => startGame(selectedGrade)} className="btn-primary">Play Again</button>
-                    <button onClick={goBack} style={{ padding: '12px 24px', background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: 'var(--text-main)', cursor: 'pointer' }}>
+                <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+                    <button onClick={() => startGame(selectedGrade)} className="btn-primary">
+                        Play Again
+                    </button>
+                    <button onClick={goBack} className="btn-ghost">
                         Change Grade
                     </button>
                 </div>
@@ -228,50 +256,77 @@ const PvB = () => {
     }
 
     // Playing / Result Screen
+    const config = gradeConfigs[selectedGrade];
+
     return (
-        <div className="glass-panel" style={{ maxWidth: '600px', margin: '0 auto', padding: '2rem', textAlign: 'center' }}>
+        <div className="glass-panel animate-fade-in" style={{ maxWidth: '600px', margin: '0 auto', padding: '2rem', textAlign: 'center' }}>
             {/* Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                <button onClick={goBack} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <ArrowLeft size={20} /> Exit
+                <button onClick={goBack} className="btn-ghost" style={{ padding: '0.5rem 1rem' }}>
+                    <ArrowLeft size={18} /> Exit
                 </button>
-                <span className="text-gradient" style={{ fontWeight: 'bold' }}>{gradeConfigs[selectedGrade].emoji} {gradeConfigs[selectedGrade].name}</span>
-                <div style={{ width: '60px' }}></div>
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    background: 'var(--bg-darker)',
+                    padding: '0.5rem 1rem',
+                    borderRadius: 'var(--radius-sm)',
+                    border: '2px solid var(--border)'
+                }}>
+                    <span style={{ fontSize: '1.25rem' }}>{config.emoji}</span>
+                    <span style={{ fontWeight: '700', textTransform: 'uppercase' }}>{config.name}</span>
+                </div>
+                <div style={{ width: '80px' }}></div>
             </div>
 
             {/* Score Display */}
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '3rem', marginBottom: '2rem' }}>
+            <div style={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                gap: '2rem',
+                marginBottom: '2rem',
+                background: 'var(--bg-darker)',
+                padding: '1.5rem 2rem',
+                borderRadius: 'var(--radius-md)',
+                border: '3px solid var(--border)'
+            }}>
                 <div style={{ textAlign: 'center' }}>
-                    <User size={30} style={{ color: '#4ade80' }} />
-                    <div style={{ fontSize: '2rem', fontWeight: 'bold' }}>{playerWins}</div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>You</div>
+                    <User size={36} style={{ color: 'var(--primary)' }} />
+                    <div style={{ fontSize: '2.5rem', fontWeight: '700', color: 'var(--primary)' }}>{playerWins}</div>
+                    <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '600' }}>You</div>
                 </div>
-                <div style={{ fontSize: '1.5rem', color: 'var(--text-muted)', alignSelf: 'center' }}>vs</div>
+                <div className="vs-badge">VS</div>
                 <div style={{ textAlign: 'center' }}>
-                    <Bot size={30} style={{ color: '#f87171' }} />
-                    <div style={{ fontSize: '2rem', fontWeight: 'bold' }}>{botWins}</div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Bot</div>
+                    <Bot size={36} style={{ color: 'var(--error)' }} />
+                    <div style={{ fontSize: '2.5rem', fontWeight: '700', color: 'var(--error)' }}>{botWins}</div>
+                    <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: '600' }}>Bot</div>
                 </div>
             </div>
 
             {/* Timer */}
-            <div style={{
-                fontSize: '3rem',
-                fontWeight: 'bold',
-                marginBottom: '1rem',
-                color: timeLeft <= 3 ? '#f87171' : 'var(--accent)'
-            }}>
+            <div className={timeLeft <= 3 ? 'timer timer-warning' : 'timer timer-normal'} style={{ marginBottom: '1rem' }}>
                 {timeLeft}s
             </div>
 
             {/* Problem */}
-            <div style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '1.5rem', fontFamily: 'monospace' }}>
+            <div style={{
+                fontSize: 'clamp(1.75rem, 6vw, 2.5rem)',
+                fontWeight: '700',
+                marginBottom: '1.5rem',
+                fontFamily: 'monospace',
+                background: 'var(--bg-darker)',
+                padding: '1.25rem',
+                borderRadius: 'var(--radius-md)',
+                border: '3px solid var(--border)'
+            }}>
                 {problem.display}
             </div>
 
-            {/* Input (only when playing) */}
+            {/* Input */}
             {gameState === 'playing' && (
-                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: '280px', margin: '0 auto' }}>
+                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: '300px', margin: '0 auto' }}>
                     <input
                         ref={inputRef}
                         type="number"
@@ -279,8 +334,11 @@ const PvB = () => {
                         onChange={(e) => setUserAnswer(e.target.value)}
                         placeholder="Answer"
                         className="input input-lg"
+                        style={{ fontWeight: '700' }}
                     />
-                    <button type="submit" className="btn-primary">Submit</button>
+                    <button type="submit" className="btn-primary" style={{ fontSize: '1.1rem' }}>
+                        <Check size={22} /> Submit
+                    </button>
                 </form>
             )}
 
@@ -289,15 +347,20 @@ const PvB = () => {
                 <div style={{ marginTop: '1rem' }}>
                     <div style={{
                         fontSize: '1.5rem',
-                        color: roundResult === 'player' ? '#4ade80' : '#f87171',
-                        marginBottom: '0.5rem'
+                        fontWeight: '700',
+                        color: roundResult === 'player' ? 'var(--primary)' : 'var(--error)',
+                        marginBottom: '0.75rem',
+                        textTransform: 'uppercase',
+                        textShadow: roundResult === 'player' ? '0 0 15px var(--primary-glow)' : '0 0 15px rgba(255,71,87,0.4)'
                     }}>
-                        {roundResult === 'player' ? '✓ You got it!' : '✗ ' + (timeLeft === 0 ? 'Time\'s up!' : 'Wrong answer!')}
+                        {roundResult === 'player' ? '✓ Correct!' : '✗ ' + (timeLeft === 0 ? 'Time\'s up!' : 'Wrong!')}
                     </div>
-                    <div style={{ color: 'var(--text-muted)', marginBottom: '1rem' }}>
-                        Answer was: <strong>{problem.answer}</strong>
+                    <div style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', fontSize: '1.1rem' }}>
+                        Answer: <strong style={{ color: 'var(--secondary)' }}>{problem.answer}</strong>
                     </div>
-                    <button onClick={startRound} className="btn-primary">Next Round</button>
+                    <button onClick={startRound} className="btn-primary">
+                        Next Round
+                    </button>
                 </div>
             )}
         </div>

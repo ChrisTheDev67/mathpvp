@@ -4,6 +4,10 @@
     z-index: 1000;
     padding: 0.75rem 1.5rem;
     margin-bottom: 2rem;
+    background: var(--bg-card);
+    border: 3px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 6px 0 rgba(0, 0, 0, 0.3);
 }
 
 .navbar-container {
@@ -18,32 +22,44 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    font-size: 1.3rem;
+    font-size: 1.5rem;
     font-weight: 700;
     text-decoration: none;
+    color: var(--primary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-shadow: 0 2px 0 rgba(0, 0, 0, 0.3);
+}
+
+.navbar-logo:hover {
+    color: var(--primary-hover);
 }
 
 .logo-icon {
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
+    color: var(--primary);
 }
 
 .menu-icon {
     display: none;
     cursor: pointer;
-    padding: 8px;
+    padding: 10px;
     border-radius: var(--radius-sm);
-    transition: background 0.15s ease;
+    background: var(--bg-darker);
+    border: 2px solid var(--border);
+    transition: all 0.15s ease;
 }
 
 .menu-icon:hover {
-    background: var(--glass-bg);
+    border-color: var(--primary);
+    background: rgba(2, 183, 87, 0.1);
 }
 
 .nav-menu {
     display: flex;
     align-items: center;
-    gap: 0.25rem;
+    gap: 0.5rem;
     list-style: none;
 }
 
@@ -55,40 +71,86 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.6rem 1rem;
-    color: var(--text-main);
+    padding: 0.75rem 1.25rem;
+    color: var(--text-muted);
     text-decoration: none;
     border-radius: var(--radius-sm);
-    font-weight: 500;
+    font-weight: 600;
     font-size: 0.95rem;
-    transition: color 0.15s ease, background 0.15s ease;
+    transition: all 0.15s ease;
     min-height: var(--touch-target);
+    border: 2px solid transparent;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .nav-link:hover {
     color: var(--text-main);
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--bg-darker);
+    border-color: var(--border);
 }
 
 .nav-link.active {
-    color: var(--accent);
-    background: rgba(34, 211, 238, 0.1);
+    color: var(--primary);
+    background: rgba(2, 183, 87, 0.15);
+    border-color: var(--primary);
+    box-shadow: 0 0 15px var(--primary-glow);
 }
 
 .nav-text {
     display: inline;
 }
 
+/* Auth Button in Nav */
+.nav-auth-btn {
+    background: var(--primary);
+    color: white !important;
+    border: none !important;
+    box-shadow: 0 3px 0 var(--primary-dark);
+}
+
+.nav-auth-btn:hover {
+    background: var(--primary-hover);
+}
+
+/* Logout button styling */
+.nav-logout-btn {
+    background: transparent;
+    border: 2px solid var(--border) !important;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    font-family: inherit;
+    transition: all 0.15s ease;
+}
+
+.nav-logout-btn:hover {
+    border-color: var(--error) !important;
+    color: var(--error);
+    background: rgba(255, 71, 87, 0.1);
+}
+
 /* Divider between main nav and auth */
 .nav-divider {
-    width: 1px;
-    height: 24px;
-    background: var(--glass-border);
+    width: 2px;
+    height: 28px;
+    background: var(--border);
     margin: 0 0.5rem;
+    border-radius: 1px;
 }
 
 /* Mobile Styles */
 @media (max-width: 900px) {
+    .navbar {
+        margin: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+
     .menu-icon {
         display: flex;
         align-items: center;
@@ -97,18 +159,20 @@
 
     .nav-menu {
         position: fixed;
-        top: 70px;
-        left: 0;
-        right: 0;
+        top: 80px;
+        left: 0.5rem;
+        right: 0.5rem;
         flex-direction: column;
-        background: var(--bg-gradient-start);
-        border-bottom: 1px solid var(--glass-border);
+        background: var(--bg-card);
+        border: 3px solid var(--border);
+        border-radius: var(--radius-lg);
         padding: 1rem;
         gap: 0.5rem;
         transform: translateY(-150%);
         opacity: 0;
         transition: transform 0.3s ease, opacity 0.3s ease;
         pointer-events: none;
+        box-shadow: 0 8px 0 rgba(0, 0, 0, 0.3);
     }
 
     .nav-menu.active {
@@ -120,12 +184,12 @@
     .nav-link {
         width: 100%;
         justify-content: flex-start;
-        padding: 1rem;
+        padding: 1rem 1.25rem;
     }
 
     .nav-divider {
         width: 100%;
-        height: 1px;
+        height: 2px;
         margin: 0.5rem 0;
     }
 }
@@ -137,5 +201,14 @@
 
     .navbar {
         padding: 0.75rem 1rem;
+    }
+
+    .navbar-logo {
+        font-size: 1.25rem;
+    }
+
+    .logo-icon {
+        width: 28px;
+        height: 28px;
     }
 }

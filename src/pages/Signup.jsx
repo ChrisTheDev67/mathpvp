@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { UserPlus, Mail, Lock, User } from 'lucide-react';
+import { UserPlus, Mail, Lock, User, Gamepad2 } from 'lucide-react';
 
 const Signup = () => {
     const [email, setEmail] = useState('');
@@ -33,31 +33,33 @@ const Signup = () => {
     };
 
     return (
-        <div className="glass-panel animate-fade-in" style={{ maxWidth: '400px', margin: '0 auto', padding: '2.5rem' }}>
+        <div className="glass-panel animate-fade-in" style={{ maxWidth: '420px', margin: '0 auto', padding: '2.5rem' }}>
             <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
                 <div style={{
-                    width: '64px', height: '64px', borderRadius: '50%',
-                    background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
+                    width: '80px', height: '80px', borderRadius: 'var(--radius-md)',
+                    background: 'var(--secondary)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    margin: '0 auto 1rem'
+                    margin: '0 auto 1.25rem',
+                    boxShadow: '0 4px 0 #0080CC, 0 0 25px var(--secondary-glow)'
                 }}>
-                    <UserPlus size={28} color="white" />
+                    <UserPlus size={40} color="white" />
                 </div>
-                <h2 className="text-gradient" style={{ fontSize: '1.75rem' }}>Create Account</h2>
-                <p style={{ color: 'var(--text-muted)', marginTop: '0.5rem', fontSize: '0.95rem' }}>
-                    Join Math Helper today
+                <h2 style={{ fontSize: '2rem', fontWeight: '700', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Join the Game</h2>
+                <p style={{ color: 'var(--text-muted)', fontSize: '1rem' }}>
+                    Create your player account
                 </p>
             </div>
 
             {error && (
                 <div style={{
-                    background: 'rgba(248,113,113,0.1)',
-                    border: '1px solid var(--error)',
+                    background: 'rgba(255, 71, 87, 0.15)',
+                    border: '2px solid var(--error)',
                     borderRadius: 'var(--radius-sm)',
                     padding: '1rem',
                     marginBottom: '1.5rem',
                     color: 'var(--error)',
-                    fontSize: '0.9rem'
+                    fontSize: '0.95rem',
+                    fontWeight: '600'
                 }}>
                     {error}
                 </div>
@@ -69,11 +71,14 @@ const Signup = () => {
                         display: 'flex',
                         alignItems: 'center',
                         gap: '0.5rem',
-                        marginBottom: '0.5rem',
-                        color: 'var(--text-muted)',
-                        fontSize: '0.9rem'
+                        marginBottom: '0.75rem',
+                        color: 'var(--text-main)',
+                        fontSize: '0.95rem',
+                        fontWeight: '600',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px'
                     }}>
-                        <User size={16} />Nickname
+                        <User size={18} />Player Name
                     </label>
                     <input
                         type="text"
@@ -90,11 +95,14 @@ const Signup = () => {
                         display: 'flex',
                         alignItems: 'center',
                         gap: '0.5rem',
-                        marginBottom: '0.5rem',
-                        color: 'var(--text-muted)',
-                        fontSize: '0.9rem'
+                        marginBottom: '0.75rem',
+                        color: 'var(--text-main)',
+                        fontSize: '0.95rem',
+                        fontWeight: '600',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px'
                     }}>
-                        <Mail size={16} />Email
+                        <Mail size={18} />Email
                     </label>
                     <input
                         type="email"
@@ -111,11 +119,14 @@ const Signup = () => {
                         display: 'flex',
                         alignItems: 'center',
                         gap: '0.5rem',
-                        marginBottom: '0.5rem',
-                        color: 'var(--text-muted)',
-                        fontSize: '0.9rem'
+                        marginBottom: '0.75rem',
+                        color: 'var(--text-main)',
+                        fontSize: '0.95rem',
+                        fontWeight: '600',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px'
                     }}>
-                        <Lock size={16} />Password
+                        <Lock size={18} />Password
                     </label>
                     <input
                         type="password"
@@ -130,18 +141,18 @@ const Signup = () => {
 
                 <button
                     type="submit"
-                    className="btn-primary"
+                    className="btn-secondary"
                     disabled={loading}
                     style={{ width: '100%', marginBottom: '1.5rem', opacity: loading ? 0.7 : 1 }}
                 >
-                    {loading ? 'Creating account...' : 'Sign Up'}
+                    {loading ? 'Creating account...' : 'Start Playing'}
                 </button>
             </form>
 
-            <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.95rem' }}>
-                Already have an account?{' '}
-                <Link to="/login" style={{ color: 'var(--accent)', textDecoration: 'none', fontWeight: 600 }}>
-                    Log in
+            <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '1rem' }}>
+                Already a player?{' '}
+                <Link to="/login" style={{ color: 'var(--primary)', textDecoration: 'none', fontWeight: 700 }}>
+                    Log In
                 </Link>
             </p>
         </div>

@@ -11,17 +11,26 @@ const Navbar = () => {
   const { user, profile, signOut } = useAuth();
 
   const navItems = [
-    { name: 'Home', path: '/', icon: <Home size={20} /> },
-    { name: 'Practice', path: '/practice', icon: <Calculator size={20} /> },
-    { name: 'PvB', path: '/pvb', icon: <Bot size={20} /> },
-    { name: 'Battle Royale', path: '/pvp', icon: <Swords size={20} /> },
-    { name: 'Leaderboard', path: '/leaderboard', icon: <Trophy size={20} /> },
+    { name: 'Home', path: '/', icon: <Home size={18} /> },
+    { name: 'Practice', path: '/practice', icon: <Calculator size={18} /> },
+    { name: 'PvB', path: '/pvb', icon: <Bot size={18} /> },
+    { name: 'Battle Royale', path: '/pvp', icon: <Swords size={18} /> },
+    { name: 'Leaderboard', path: '/leaderboard', icon: <Trophy size={18} /> },
+    { name: 'About', path: '/about', icon: <div style={{ fontSize: '1.2rem', lineHeight: 1 }}>👋</div> },
   ];
 
   const handleSignOut = async () => {
     await signOut();
     navigate('/');
     setIsOpen(false);
+  };
+
+  const handleKeyDown = (e, path) => {
+    if (e.key === ' ') {
+      e.preventDefault();
+      navigate(path);
+      setIsOpen(false);
+    }
   };
 
   return (
@@ -43,6 +52,7 @@ const Navbar = () => {
                 to={item.path}
                 className={`nav-link ${location.pathname === item.path ? 'active' : ''}`}
                 onClick={() => setIsOpen(false)}
+                onKeyDown={(e) => handleKeyDown(e, item.path)}
               >
                 {item.icon}
                 <span className="nav-text">{item.name}</span>
@@ -59,17 +69,7 @@ const Navbar = () => {
                 </span>
                 <button
                   onClick={handleSignOut}
-                  style={{
-                    background: 'transparent',
-                    border: '1px solid var(--glass-border)',
-                    padding: '0.5rem 1rem',
-                    borderRadius: '8px',
-                    color: 'var(--text-muted)',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem'
-                  }}
+                  className="nav-logout-btn"
                 >
                   <LogOut size={16} /> Logout
                 </button>
@@ -79,6 +79,7 @@ const Navbar = () => {
                 to="/login"
                 className="nav-link"
                 onClick={() => setIsOpen(false)}
+                onKeyDown={(e) => handleKeyDown(e, '/login')}
                 style={{
                   background: 'var(--primary)',
                   borderRadius: '8px',
@@ -91,8 +92,8 @@ const Navbar = () => {
             )}
           </li>
         </ul>
-      </div>
-    </nav>
+      </div >
+    </nav >
   );
 };
 

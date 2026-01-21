@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { LogIn, Mail, Lock } from 'lucide-react';
+import { LogIn, Mail, Lock, Gamepad2 } from 'lucide-react';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -26,31 +26,33 @@ const Login = () => {
     };
 
     return (
-        <div className="glass-panel animate-fade-in" style={{ maxWidth: '400px', margin: '0 auto', padding: '2.5rem' }}>
+        <div className="glass-panel animate-fade-in" style={{ maxWidth: '420px', margin: '0 auto', padding: '2.5rem' }}>
             <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
                 <div style={{
-                    width: '64px', height: '64px', borderRadius: '50%',
-                    background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
+                    width: '80px', height: '80px', borderRadius: 'var(--radius-md)',
+                    background: 'var(--primary)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    margin: '0 auto 1rem'
+                    margin: '0 auto 1.25rem',
+                    boxShadow: '0 4px 0 var(--primary-dark), 0 0 25px var(--primary-glow)'
                 }}>
-                    <LogIn size={28} color="white" />
+                    <Gamepad2 size={40} color="white" />
                 </div>
-                <h2 className="text-gradient" style={{ fontSize: '1.75rem' }}>Welcome Back</h2>
-                <p style={{ color: 'var(--text-main)', marginTop: '0.5rem', fontSize: '0.95rem' }}>
-                    Log in to continue your math journey
+                <h2 style={{ fontSize: '2rem', fontWeight: '700', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Welcome Back</h2>
+                <p style={{ color: 'var(--text-muted)', fontSize: '1rem' }}>
+                    Log in to continue your adventure
                 </p>
             </div>
 
             {error && (
                 <div style={{
-                    background: 'rgba(248,113,113,0.1)',
-                    border: '1px solid var(--error)',
+                    background: 'rgba(255, 71, 87, 0.15)',
+                    border: '2px solid var(--error)',
                     borderRadius: 'var(--radius-sm)',
                     padding: '1rem',
                     marginBottom: '1.5rem',
                     color: 'var(--error)',
-                    fontSize: '0.9rem'
+                    fontSize: '0.95rem',
+                    fontWeight: '600'
                 }}>
                     {error}
                 </div>
@@ -62,11 +64,14 @@ const Login = () => {
                         display: 'flex',
                         alignItems: 'center',
                         gap: '0.5rem',
-                        marginBottom: '0.5rem',
+                        marginBottom: '0.75rem',
                         color: 'var(--text-main)',
-                        fontSize: '0.9rem'
+                        fontSize: '0.95rem',
+                        fontWeight: '600',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px'
                     }}>
-                        <Mail size={16} />Email
+                        <Mail size={18} />Email
                     </label>
                     <input
                         type="email"
@@ -83,11 +88,14 @@ const Login = () => {
                         display: 'flex',
                         alignItems: 'center',
                         gap: '0.5rem',
-                        marginBottom: '0.5rem',
+                        marginBottom: '0.75rem',
                         color: 'var(--text-main)',
-                        fontSize: '0.9rem'
+                        fontSize: '0.95rem',
+                        fontWeight: '600',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px'
                     }}>
-                        <Lock size={16} />Password
+                        <Lock size={18} />Password
                     </label>
                     <input
                         type="password"
@@ -105,14 +113,14 @@ const Login = () => {
                     disabled={loading}
                     style={{ width: '100%', marginBottom: '1.5rem', opacity: loading ? 0.7 : 1 }}
                 >
-                    {loading ? 'Logging in...' : 'Log In'}
+                    {loading ? 'Logging in...' : 'Play Now'}
                 </button>
             </form>
 
-            <p style={{ textAlign: 'center', color: 'var(--text-main)', fontSize: '0.95rem' }}>
-                Don't have an account?{' '}
-                <Link to="/signup" style={{ color: 'var(--accent)', textDecoration: 'none', fontWeight: 600 }}>
-                    Sign up
+            <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '1rem' }}>
+                New player?{' '}
+                <Link to="/signup" style={{ color: 'var(--secondary)', textDecoration: 'none', fontWeight: 700 }}>
+                    Create Account
                 </Link>
             </p>
         </div>
