@@ -14,7 +14,7 @@ const About = () => {
             <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', alignItems: 'center' }}>
                 <div style={{ flex: '1', minWidth: '300px' }}>
                     <p style={{ marginBottom: '1.25rem', lineHeight: '1.8', fontSize: '1.15rem' }}>
-                        Hi! I am <strong style={{ color: 'var(--primary)' }}>10 years old</strong> and I created <strong style={{ color: 'var(--secondary)' }}>MathPvP</strong>!
+                        Hi! I'm <strong style={{ color: 'var(--accent)' }}>Chris</strong>! I am <strong style={{ color: 'var(--primary)' }}>10 years old</strong> and I created <strong style={{ color: 'var(--secondary)' }}>MathPvP</strong>!
                     </p>
                     <p style={{ marginBottom: '1.25rem', lineHeight: '1.8', fontSize: '1.15rem' }}>
                         I am 50% 🇰🇷 Korean, 25% 🇷🇺 Russian, and 25% 🇩🇪 German. I speak both Russian and English!
