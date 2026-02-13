@@ -10,7 +10,7 @@ const SYMBOLS = [
 const MathBackground = () => {
     // Generate static random items only once on mount to avoid re-renders
     const items = useMemo(() => {
-        return Array.from({ length: 40 }).map((_, i) => ({
+        return Array.from({ length: 20 }).map((_, i) => ({
             id: i,
             symbol: SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)],
             left: `${Math.random() * 100}%`,

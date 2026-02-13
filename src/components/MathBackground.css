@@ -1,4 +1,4 @@
-/* 3D Floating Math Background */
+/* 3D Floating Math Background - Optimized */
 .math-background {
     position: fixed;
     top: 0;
@@ -10,6 +10,8 @@
     background: radial-gradient(circle at 50% 50%, #1a1a2e 0%, #16213e 100%);
     perspective: 1000px;
     pointer-events: none;
+    /* Hardware acceleration for the container */
+    transform: translateZ(0);
 }
 
 .math-3d-container {
@@ -25,34 +27,33 @@
     font-family: 'Inter', sans-serif;
     font-weight: 700;
     user-select: none;
+
+    /* Critical performance optimization */
     will-change: transform, opacity;
-    text-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+
+    /* Removed expensive text-shadow */
 }
 
-/* Depth variants */
+/* Depth variants - simplified filters */
 .depth-1 {
     z-index: 1;
-    filter: blur(4px);
     opacity: 0.05;
 }
 
 .depth-2 {
     z-index: 2;
-    filter: blur(2px);
     opacity: 0.1;
 }
 
 .depth-3 {
     z-index: 3;
-    filter: blur(0px);
     opacity: 0.15;
 }
 
 .depth-4 {
     z-index: 4;
-    filter: blur(0px);
     opacity: 0.2;
-    text-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+    /* Removed expensive blur and text-shadow */
 }
 
 @keyframes float3D {
@@ -77,14 +78,12 @@
     }
 }
 
-/* Glassmorphism Overlay */
+/* Gradient Overlay - Removed backdrop-filter */
 .math-overlay {
     position: absolute;
     inset: 0;
     background:
         radial-gradient(circle at 15% 50%, rgba(79, 70, 229, 0.12) 0%, transparent 50%),
         radial-gradient(circle at 85% 30%, rgba(236, 72, 153, 0.12) 0%, transparent 50%);
-    backdrop-filter: blur(1px);
-    /* Slight blur to blend remote elements */
     z-index: 0;
 }
