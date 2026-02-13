@@ -1,223 +1,163 @@
-import React, { useState } from 'react';
-import { Check, X, RefreshCw, ArrowLeft, Zap, Target } from 'lucide-react';
-
-// Grade configurations with appropriate math topics for each grade
-const gradeConfigs = {
-    '1-2': {
-        name: 'Grades 1-2',
-        emoji: '🌟',
-        topics: 'Addition & Subtraction',
-        color: 'var(--primary)',
-        difficulties: {
-            easy: { label: 'Easy', desc: 'Numbers 1-10', maxNum: 10, operators: ['+', '-'] },
-            normal: { label: 'Normal', desc: 'Numbers 1-20', maxNum: 20, operators: ['+', '-'] },
-            medium: { label: 'Medium', desc: 'Numbers 1-50', maxNum: 50, operators: ['+', '-'] },
-            hard: { label: 'Hard', desc: 'Numbers 1-100', maxNum: 100, operators: ['+', '-'] }
-        }
-    },
-    '3-5': {
-        name: 'Grades 3-5',
-        emoji: '🚀',
-        topics: 'Multiplication & Division',
-        color: 'var(--secondary)',
-        difficulties: {
-            easy: { label: 'Easy', desc: 'Times tables 1-5', maxMult: 5, operators: ['×', '÷'] },
-            normal: { label: 'Normal', desc: 'Times tables 1-10', maxMult: 10, operators: ['×', '÷'] },
-            medium: { label: 'Medium', desc: 'Times tables 1-12', maxMult: 12, operators: ['×', '÷'] },
-            hard: { label: 'Hard', desc: 'Big times tables', maxMult: 15, operators: ['×', '÷'] }
-        }
-    },
-    '6-9': {
-        name: 'Grades 6-9',
-        emoji: '🔥',
-        topics: 'Integers, Fractions, Algebra',
-        color: 'var(--warning)',
-        difficulties: {
-            easy: { label: 'Easy', desc: 'Negative numbers', type: 'integers', range: 20 },
-            normal: { label: 'Normal', desc: 'Order of operations', type: 'orderOps' },
-            medium: { label: 'Medium', desc: 'Solve for X (basic)', type: 'algebra', level: 1 },
-            hard: { label: 'Hard', desc: 'Solve for X (harder)', type: 'algebra', level: 2 }
-        }
-    },
-    '10-12': {
-        name: 'Grades 10-12',
-        emoji: '🏆',
-        topics: 'Advanced Algebra & Functions',
-        color: 'var(--accent)',
-        difficulties: {
-            easy: { label: 'Easy', desc: 'Linear equations', type: 'linear' },
-            normal: { label: 'Normal', desc: 'Quadratic (find roots)', type: 'quadratic' },
-            medium: { label: 'Medium', desc: 'Exponents & Powers', type: 'exponents' },
-            hard: { label: 'Hard', desc: 'Mixed advanced', type: 'mixed' }
-        }
-    }
-};
-
-const difficultyColors = {
-    easy: { bg: 'rgba(2, 183, 87, 0.15)', border: 'var(--primary)', shadow: 'var(--primary-glow)' },
-    normal: { bg: 'rgba(0, 162, 255, 0.15)', border: 'var(--secondary)', shadow: 'var(--secondary-glow)' },
-    medium: { bg: 'rgba(255, 179, 2, 0.15)', border: 'var(--warning)', shadow: 'rgba(255, 179, 2, 0.3)' },
-    hard: { bg: 'rgba(255, 71, 87, 0.15)', border: 'var(--error)', shadow: 'rgba(255, 71, 87, 0.3)' }
-};
+import React, { useState, useEffect, useRef } from 'react';
+import { useLocation, Link } from 'react-router-dom';
+import { Check, X, RefreshCw, ArrowLeft, Zap, Target, LogIn } from 'lucide-react';
+import { gradeConfigs, difficultyColors, generateProblem } from '../lib/gradeData';
+import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabase';
 
 const MathPractice = () => {
+    const { user, profile, loading: authLoading } = useAuth();
+    const location = useLocation();
     const [selectedGrade, setSelectedGrade] = useState(null);
+
+    // If not logged in, show login prompt
+    if (!authLoading && !user) {
+        return (
+            <div className="glass-panel animate-fade-in" style={{ maxWidth: '500px', margin: '0 auto', padding: '3rem', textAlign: 'center' }}>
+                <LogIn size={48} style={{ color: 'var(--secondary)', marginBottom: '1rem' }} />
+                <h2 style={{ fontSize: '1.75rem', fontWeight: '700', textTransform: 'uppercase', marginBottom: '0.75rem' }}>
+                    <span className="text-gradient">Login Required</span>
+                </h2>
+                <p style={{ color: 'var(--text-muted)', fontSize: '1rem', marginBottom: '1.5rem' }}>
+                    You need to log in to practice math problems.
+                </p>
+                <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+                    <Link to="/login" className="btn-primary" style={{ textDecoration: 'none', padding: '0.75rem 1.5rem' }}>
+                        Log In
+                    </Link>
+                    <Link to="/signup" className="btn-secondary" style={{ textDecoration: 'none', padding: '0.75rem 1.5rem' }}>
+                        Sign Up
+                    </Link>
+                </div>
+            </div>
+        );
+    }
+    const [selectedTopic, setSelectedTopic] = useState(null);
     const [selectedDifficulty, setSelectedDifficulty] = useState(null);
     const [problem, setProblem] = useState({ display: '', answer: 0 });
     const [userAnswer, setUserAnswer] = useState('');
-    const [score, setScore] = useState(0);
+    const [streak, setStreak] = useState(0);
+    const [bestStreak, setBestStreak] = useState(0);
     const [feedback, setFeedback] = useState(null);
+    const bestStreakRef = useRef(0);
 
-    // Generate problem based on grade and difficulty
-    const generateProblem = (grade, difficulty) => {
-        const config = gradeConfigs[grade].difficulties[difficulty];
-        let display, answer;
+    // Get the Monday of the current week (PT timezone)
+    const getWeekStart = () => {
+        const now = new Date();
+        const pt = new Date(now.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }));
+        const day = pt.getDay();
+        const diff = day === 0 ? 6 : day - 1; // Monday = 0
+        pt.setDate(pt.getDate() - diff);
+        pt.setHours(0, 0, 0, 0);
+        return pt.toISOString().split('T')[0]; // YYYY-MM-DD
+    };
 
-        if (grade === '1-2') {
-            const op = config.operators[Math.floor(Math.random() * config.operators.length)];
-            let n1 = Math.floor(Math.random() * config.maxNum) + 1;
-            let n2 = Math.floor(Math.random() * config.maxNum) + 1;
-            if (op === '-' && n1 < n2) [n1, n2] = [n2, n1];
-            display = `${n1} ${op} ${n2}`;
-            answer = op === '+' ? n1 + n2 : n1 - n2;
-        }
-        else if (grade === '3-5') {
-            const op = config.operators[Math.floor(Math.random() * config.operators.length)];
-            const n1 = Math.floor(Math.random() * config.maxMult) + 1;
-            const n2 = Math.floor(Math.random() * config.maxMult) + 1;
-            if (op === '×') {
-                display = `${n1} × ${n2}`;
-                answer = n1 * n2;
-            } else {
-                const product = n1 * n2;
-                display = `${product} ÷ ${n1}`;
-                answer = n2;
-            }
-        }
-        else if (grade === '6-9') {
-            if (config.type === 'integers') {
-                const n1 = Math.floor(Math.random() * config.range * 2) - config.range;
-                const n2 = Math.floor(Math.random() * config.range * 2) - config.range;
-                const op = ['+', '-'][Math.floor(Math.random() * 2)];
-                display = `(${n1}) ${op} (${n2})`;
-                answer = op === '+' ? n1 + n2 : n1 - n2;
-            } else if (config.type === 'orderOps') {
-                const a = Math.floor(Math.random() * 10) + 1;
-                const b = Math.floor(Math.random() * 5) + 1;
-                const c = Math.floor(Math.random() * 10) + 1;
-                display = `${a} + ${b} × ${c}`;
-                answer = a + (b * c);
-            } else if (config.type === 'algebra') {
-                const x = Math.floor(Math.random() * 10) + 1;
-                const a = Math.floor(Math.random() * 5) + 2;
-                if (config.level === 1) {
-                    const result = a * x;
-                    display = `${a}x = ${result}, x = ?`;
-                    answer = x;
-                } else {
-                    const b = Math.floor(Math.random() * 10) + 1;
-                    const result = a * x + b;
-                    display = `${a}x + ${b} = ${result}, x = ?`;
-                    answer = x;
-                }
-            }
-        }
-        else if (grade === '10-12') {
-            if (config.type === 'linear') {
-                const x = Math.floor(Math.random() * 10) + 1;
-                const a = Math.floor(Math.random() * 5) + 2;
-                const b = Math.floor(Math.random() * 20) - 10;
-                const c = a * x + b;
-                display = `${a}x + (${b}) = ${c}, x = ?`;
-                answer = x;
-            } else if (config.type === 'quadratic') {
-                const x = Math.floor(Math.random() * 10) + 2;
-                const n = x * x;
-                display = `x² = ${n}, x = ? (positive)`;
-                answer = x;
-            } else if (config.type === 'exponents') {
-                const base = Math.floor(Math.random() * 5) + 2;
-                const exp = Math.floor(Math.random() * 3) + 2;
-                display = `${base}^${exp} = ?`;
-                answer = Math.pow(base, exp);
-            } else {
-                const rand = Math.floor(Math.random() * 3);
-                if (rand === 0) {
-                    const x = Math.floor(Math.random() * 10) + 1;
-                    const a = Math.floor(Math.random() * 5) + 2;
-                    const b = Math.floor(Math.random() * 20) - 10;
-                    const c = a * x + b;
-                    display = `${a}x + (${b}) = ${c}, x = ?`;
-                    answer = x;
-                } else if (rand === 1) {
-                    const x = Math.floor(Math.random() * 10) + 2;
-                    const n = x * x;
-                    display = `x² = ${n}, x = ? (positive)`;
-                    answer = x;
-                } else {
-                    const base = Math.floor(Math.random() * 5) + 2;
-                    const exp = Math.floor(Math.random() * 3) + 2;
-                    display = `${base}^${exp} = ?`;
-                    answer = Math.pow(base, exp);
-                }
-            }
-        }
+    // Save best streak to Supabase
+    const saveStreak = async (newBest) => {
+        if (!user) return;
+        const weekStart = getWeekStart();
+        const nickname = profile?.nickname || 'Unknown';
 
-        setProblem({ display, answer });
+        // Upsert: update if exists for this user+week, insert otherwise
+        const { data: existing } = await supabase
+            .from('weekly_streaks')
+            .select('id, best_streak')
+            .eq('user_id', user.id)
+            .eq('week_start', weekStart)
+            .single();
+
+        if (existing && existing.best_streak >= newBest) return; // already have a better streak
+
+        if (existing) {
+            await supabase
+                .from('weekly_streaks')
+                .update({ best_streak: newBest, nickname })
+                .eq('id', existing.id);
+        } else {
+            await supabase
+                .from('weekly_streaks')
+                .insert([{ user_id: user.id, nickname, best_streak: newBest, week_start: weekStart }]);
+        }
+    };
+
+    // Auto-select grade/topic/difficulty when coming from Help page
+    useEffect(() => {
+        const s = location.state;
+        if (s?.grade && s?.topic && s?.difficulty) {
+            setSelectedGrade(s.grade);
+            setSelectedTopic(s.topic);
+            setSelectedDifficulty(s.difficulty);
+            setStreak(0);
+            setBestStreak(0);
+            const p = generateProblem(s.grade, s.topic, s.difficulty);
+            setProblem(p);
+        }
+    }, []);  // eslint-disable-line react-hooks/exhaustive-deps
+
+    const doGenerate = (grade, topicId, difficulty) => {
+        const p = generateProblem(grade, topicId, difficulty);
+        setProblem(p);
         setUserAnswer('');
         setFeedback(null);
     };
 
     const selectDifficulty = (diff) => {
         setSelectedDifficulty(diff);
-        setScore(0);
-        generateProblem(selectedGrade, diff);
+        setStreak(0);
+        setBestStreak(0);
+        doGenerate(selectedGrade, selectedTopic, diff);
     };
-
-    const [scoreDiff, setScoreDiff] = useState(null);
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (parseInt(userAnswer) === problem.answer) {
-            setScore(score + 10);
+        const parsed = parseFloat(userAnswer);
+        if (parsed === problem.answer) {
+            const newStreak = streak + 1;
+            setStreak(newStreak);
+            if (newStreak > bestStreak) {
+                setBestStreak(newStreak);
+                bestStreakRef.current = newStreak;
+                saveStreak(newStreak);
+            }
             setFeedback('correct');
-            setScoreDiff(10);
-            setTimeout(() => setScoreDiff(null), 1000);
         } else {
-            setScore(Math.max(0, score - 10));
+            setStreak(0);
             setFeedback('incorrect');
         }
-        setTimeout(() => generateProblem(selectedGrade, selectedDifficulty), 1000);
+        setTimeout(() => doGenerate(selectedGrade, selectedTopic, selectedDifficulty), 1000);
     };
 
     const goBack = () => {
         if (selectedDifficulty) {
             setSelectedDifficulty(null);
-            setScore(0);
+            setStreak(0);
+            setBestStreak(0);
+        } else if (selectedTopic) {
+            setSelectedTopic(null);
         } else {
             setSelectedGrade(null);
         }
     };
 
-    // Grade Selection Screen
+    // ─── SCREEN 1: Grade Selection ───
     if (!selectedGrade) {
         return (
-            <div className="glass-panel animate-fade-in" style={{ maxWidth: '750px', margin: '0 auto', padding: '3rem', textAlign: 'center' }}>
+            <div className="glass-panel animate-fade-in" style={{ maxWidth: '900px', margin: '0 auto', padding: '3rem', textAlign: 'center' }}>
                 <div style={{ marginBottom: '2rem' }}>
                     <Zap size={48} style={{ color: 'var(--primary)', marginBottom: '1rem' }} />
                     <h2 style={{ fontSize: '2rem', fontWeight: '700', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
                         <span className="text-gradient">Choose Your Grade</span>
                     </h2>
-                    <p style={{ color: 'var(--text-muted)', fontSize: '1rem' }}>Select your skill level</p>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '1rem' }}>Select your grade level</p>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '1rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.85rem' }}>
                     {Object.entries(gradeConfigs).map(([key, config]) => (
                         <button
                             key={key}
                             onClick={() => setSelectedGrade(key)}
                             style={{
-                                padding: '1.5rem 1rem',
+                                padding: '1.25rem 0.5rem',
                                 background: 'var(--bg-darker)',
                                 border: '3px solid var(--border)',
                                 borderRadius: 'var(--radius-md)',
@@ -235,9 +175,11 @@ const MathPractice = () => {
                                 e.currentTarget.style.transform = 'translateY(0)';
                             }}
                         >
-                            <div style={{ fontSize: '3rem', marginBottom: '0.75rem' }}>{config.emoji}</div>
-                            <div style={{ color: 'var(--text-main)', fontWeight: '700', fontSize: '1.1rem', textTransform: 'uppercase' }}>{config.name}</div>
-                            <div style={{ color: config.color, fontSize: '0.85rem', marginTop: '0.5rem', fontWeight: '600' }}>{config.topics}</div>
+                            <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>{config.emoji}</div>
+                            <div style={{ color: 'var(--text-main)', fontWeight: '700', fontSize: '1rem', textTransform: 'uppercase' }}>{config.name}</div>
+                            <div style={{ color: config.color, fontSize: '0.7rem', marginTop: '0.35rem', fontWeight: '600' }}>
+                                {config.topics.length} topics
+                            </div>
                         </button>
                     ))}
                 </div>
@@ -245,19 +187,81 @@ const MathPractice = () => {
         );
     }
 
-    // Difficulty Selection Screen
-    if (!selectedDifficulty) {
+    // ─── SCREEN 2: Topic Selection ───
+    if (!selectedTopic) {
         const grade = gradeConfigs[selectedGrade];
         return (
-            <div className="glass-panel animate-fade-in" style={{ maxWidth: '700px', margin: '0 auto', padding: '3rem', textAlign: 'center' }}>
+            <div className="glass-panel animate-fade-in" style={{ maxWidth: '850px', margin: '0 auto', padding: '3rem', textAlign: 'center' }}>
                 <button onClick={goBack} className="btn-ghost" style={{ marginBottom: '1.5rem', padding: '0.75rem 1.25rem' }}>
                     <ArrowLeft size={20} /> Back to Grades
                 </button>
 
                 <div style={{ marginBottom: '2rem' }}>
-                    <div style={{ fontSize: '4rem', marginBottom: '0.5rem' }}>{grade.emoji}</div>
+                    <div style={{ fontSize: '3.5rem', marginBottom: '0.5rem' }}>{grade.emoji}</div>
                     <h2 style={{ fontSize: '1.75rem', fontWeight: '700', textTransform: 'uppercase', marginBottom: '0.25rem' }}>{grade.name}</h2>
-                    <p style={{ color: grade.color, fontWeight: '600' }}>{grade.topics}</p>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '1rem' }}>Choose a topic to practice</p>
+                </div>
+
+                <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                    gap: '1rem',
+                }}>
+                    {grade.topics.map((topic) => (
+                        <button
+                            key={topic.id}
+                            onClick={() => setSelectedTopic(topic.id)}
+                            style={{
+                                padding: '1.25rem 1rem',
+                                background: 'var(--bg-darker)',
+                                border: '3px solid var(--border)',
+                                borderRadius: 'var(--radius-md)',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease',
+                                textAlign: 'center',
+                                boxShadow: '0 4px 0 rgba(0,0,0,0.3)'
+                            }}
+                            onMouseOver={(e) => {
+                                e.currentTarget.style.borderColor = grade.color;
+                                e.currentTarget.style.transform = 'translateY(-4px)';
+                                e.currentTarget.style.boxShadow = `0 4px 0 rgba(0,0,0,0.3), 0 0 15px ${grade.color}33`;
+                            }}
+                            onMouseOut={(e) => {
+                                e.currentTarget.style.borderColor = 'var(--border)';
+                                e.currentTarget.style.transform = 'translateY(0)';
+                                e.currentTarget.style.boxShadow = '0 4px 0 rgba(0,0,0,0.3)';
+                            }}
+                        >
+                            <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>{topic.emoji}</div>
+                            <div style={{ color: 'var(--text-main)', fontWeight: '700', fontSize: '0.95rem' }}>{topic.name}</div>
+                        </button>
+                    ))}
+                </div>
+            </div>
+        );
+    }
+
+    // ─── SCREEN 3: Difficulty Selection ───
+    if (!selectedDifficulty) {
+        const grade = gradeConfigs[selectedGrade];
+        const topic = grade.topics.find(t => t.id === selectedTopic);
+        const difficulties = [
+            { key: 'easy', label: 'Easy', desc: 'Start simple' },
+            { key: 'normal', label: 'Normal', desc: 'Standard challenge' },
+            { key: 'medium', label: 'Medium', desc: 'Step it up' },
+            { key: 'hard', label: 'Hard', desc: 'Full power' },
+        ];
+
+        return (
+            <div className="glass-panel animate-fade-in" style={{ maxWidth: '700px', margin: '0 auto', padding: '3rem', textAlign: 'center' }}>
+                <button onClick={goBack} className="btn-ghost" style={{ marginBottom: '1.5rem', padding: '0.75rem 1.25rem' }}>
+                    <ArrowLeft size={20} /> Back to Topics
+                </button>
+
+                <div style={{ marginBottom: '2rem' }}>
+                    <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>{topic.emoji}</div>
+                    <h2 style={{ fontSize: '1.5rem', fontWeight: '700', textTransform: 'uppercase', marginBottom: '0.25rem' }}>{topic.name}</h2>
+                    <p style={{ color: grade.color, fontWeight: '600', fontSize: '0.95rem' }}>{grade.name}</p>
                 </div>
 
                 <h3 style={{ color: 'var(--text-main)', marginBottom: '1.5rem', fontSize: '1.25rem', textTransform: 'uppercase' }}>
@@ -266,7 +270,7 @@ const MathPractice = () => {
                 </h3>
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
-                    {Object.entries(grade.difficulties).map(([key, diff]) => {
+                    {difficulties.map(({ key, label, desc }) => {
                         const colors = difficultyColors[key];
                         return (
                             <button
@@ -280,7 +284,7 @@ const MathPractice = () => {
                                     cursor: 'pointer',
                                     transition: 'all 0.2s ease',
                                     textAlign: 'center',
-                                    boxShadow: `0 4px 0 rgba(0,0,0,0.3)`
+                                    boxShadow: '0 4px 0 rgba(0,0,0,0.3)'
                                 }}
                                 onMouseOver={(e) => {
                                     e.currentTarget.style.boxShadow = `0 4px 0 rgba(0,0,0,0.3), 0 0 20px ${colors.shadow}`;
@@ -291,8 +295,8 @@ const MathPractice = () => {
                                     e.currentTarget.style.transform = 'translateY(0)';
                                 }}
                             >
-                                <div style={{ color: colors.border, fontWeight: '700', fontSize: '1.2rem', textTransform: 'uppercase' }}>{diff.label}</div>
-                                <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '0.5rem' }}>{diff.desc}</div>
+                                <div style={{ color: colors.border, fontWeight: '700', fontSize: '1.2rem', textTransform: 'uppercase' }}>{label}</div>
+                                <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '0.5rem' }}>{desc}</div>
                             </button>
                         );
                     })}
@@ -301,9 +305,9 @@ const MathPractice = () => {
         );
     }
 
-    // Practice Screen
+    // ─── SCREEN 4: Practice ───
     const grade = gradeConfigs[selectedGrade];
-    const diff = grade.difficulties[selectedDifficulty];
+    const topic = grade.topics.find(t => t.id === selectedTopic);
     const colors = difficultyColors[selectedDifficulty];
 
     return (
@@ -315,14 +319,18 @@ const MathPractice = () => {
                 <div style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '0.75rem',
+                    gap: '0.5rem',
                     background: 'var(--bg-darker)',
                     padding: '0.5rem 1rem',
                     borderRadius: 'var(--radius-sm)',
-                    border: '2px solid var(--border)'
+                    border: '2px solid var(--border)',
+                    fontSize: '0.85rem'
                 }}>
-                    <span style={{ fontSize: '1.25rem' }}>{grade.emoji}</span>
-                    <span style={{ fontWeight: '600', color: colors.border, textTransform: 'uppercase' }}>{diff.label}</span>
+                    <span>{topic.emoji}</span>
+                    <span style={{ fontWeight: '600', color: 'var(--text-main)' }}>{topic.name}</span>
+                    <span style={{ color: colors.border, fontWeight: '700', textTransform: 'uppercase', fontSize: '0.75rem' }}>
+                        ({selectedDifficulty})
+                    </span>
                 </div>
                 <div style={{
                     background: 'var(--bg-darker)',
@@ -331,26 +339,20 @@ const MathPractice = () => {
                     border: '2px solid var(--accent)',
                     position: 'relative'
                 }}>
-                    <span style={{ color: 'var(--text-muted)', marginRight: '0.5rem' }}>Score:</span>
-                    <span className="score-display" style={{ fontSize: '1.5rem' }}>{score}</span>
-                    {scoreDiff && (
-                        <span className="animate-score" style={{
-                            position: 'absolute',
-                            top: '-20px',
-                            right: '0',
-                            color: 'var(--success)',
-                            fontWeight: 'bold',
-                            fontSize: '1.2rem',
-                            textShadow: '0 0 10px var(--success)'
+                    <span style={{ color: 'var(--text-muted)', marginRight: '0.5rem' }}>🔥 Streak:</span>
+                    <span className="score-display" style={{ fontSize: '1.5rem' }}>{streak}</span>
+                    {bestStreak > 0 && (
+                        <span style={{
+                            marginLeft: '0.75rem', color: 'var(--text-muted)', fontSize: '0.85rem'
                         }}>
-                            +{scoreDiff}
+                            Best: {bestStreak}
                         </span>
                     )}
                 </div>
             </div>
 
             <div style={{
-                fontSize: 'clamp(2rem, 8vw, 3rem)',
+                fontSize: 'clamp(1.25rem, 5vw, 2.25rem)',
                 fontWeight: '700',
                 marginBottom: '2rem',
                 fontFamily: 'monospace',
@@ -367,6 +369,7 @@ const MathPractice = () => {
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: '320px', margin: '0 auto' }}>
                 <input
                     type="number"
+                    step="any"
                     value={userAnswer}
                     onChange={(e) => setUserAnswer(e.target.value)}
                     placeholder="Your Answer"
@@ -392,11 +395,14 @@ const MathPractice = () => {
                     textTransform: 'uppercase',
                     textShadow: feedback === 'correct' ? '0 0 15px var(--primary-glow)' : '0 0 15px rgba(255,71,87,0.4)'
                 }}>
-                    {feedback === 'correct' ? <><Check size={28} /> Correct! +10</> : <><X size={28} /> Wrong!</>}
+                    {feedback === 'correct'
+                        ? <><Check size={28} /> Correct! +10</>
+                        : <><X size={28} /> Wrong! Answer: {problem.answer}</>
+                    }
                 </div>
             )}
 
-            <button onClick={() => generateProblem(selectedGrade, selectedDifficulty)} className="btn-ghost" style={{ marginTop: '2rem' }}>
+            <button onClick={() => doGenerate(selectedGrade, selectedTopic, selectedDifficulty)} className="btn-ghost" style={{ marginTop: '2rem' }}>
                 <RefreshCw size={18} /> Skip Problem
             </button>
         </div>

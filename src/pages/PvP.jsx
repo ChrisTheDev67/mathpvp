@@ -3,24 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { ArrowLeft, Clock, Trophy, Lock, Key, Swords, Check } from 'lucide-react';
-
-// Grade configurations
-const gradeConfigs = {
-    '1-2': { name: 'Grades 1-2', emoji: '🌟', maxNum: 20, operators: ['+', '-'], duration: 60, color: 'var(--primary)' },
-    '3-5': { name: 'Grades 3-5', emoji: '🚀', maxMult: 12, operators: ['×', '÷', 'frac+', 'frac-'], duration: 120, color: 'var(--secondary)' },
-    '6-9': { name: 'Grades 6-9', emoji: '🔥', type: 'algebra', duration: 240, color: 'var(--warning)' },
-    '10-12': { name: 'Grades 10-12', emoji: '🏆', type: 'advanced', duration: 300, color: 'var(--accent)' }
-};
-
-// Helper function to get GCD for simplifying fractions
-const gcd = (a, b) => b === 0 ? a : gcd(b, a % b);
-
-// Helper to format mixed number for display
-const formatMixedNumber = (whole, num, denom) => {
-    if (whole === 0) return `${num}/${denom}`;
-    if (num === 0) return `${whole}`;
-    return `${whole} ${num}/${denom}`;
-};
+import { gradeConfigs, generateProblem } from '../lib/gradeData';
 
 const COOLDOWN_HOURS = 24;
 const ADMIN_EMAIL = 'chris.vkim@icloud.com';
@@ -94,86 +77,6 @@ const PvP = () => {
         }
     };
 
-    const generateProblem = (grade) => {
-        const config = gradeConfigs[grade];
-        let display, answer;
-
-        if (grade === '1-2') {
-            const op = config.operators[Math.floor(Math.random() * config.operators.length)];
-            let n1 = Math.floor(Math.random() * config.maxNum) + 1;
-            let n2 = Math.floor(Math.random() * config.maxNum) + 1;
-            if (op === '-' && n1 < n2) [n1, n2] = [n2, n1];
-            display = `${n1} ${op} ${n2}`;
-            answer = op === '+' ? n1 + n2 : n1 - n2;
-        } else if (grade === '3-5') {
-            const op = config.operators[Math.floor(Math.random() * config.operators.length)];
-
-            if (op === '×' || op === '÷') {
-                const n1 = Math.floor(Math.random() * config.maxMult) + 1;
-                const n2 = Math.floor(Math.random() * config.maxMult) + 1;
-                if (op === '×') {
-                    display = `${n1} × ${n2}`;
-                    answer = n1 * n2;
-                } else {
-                    const product = n1 * n2;
-                    display = `${product} ÷ ${n1}`;
-                    answer = n2;
-                }
-            } else {
-                const denomOptions = [2, 3, 4, 5, 7];
-                let denom1 = denomOptions[Math.floor(Math.random() * denomOptions.length)];
-                let denom2;
-                do {
-                    denom2 = denomOptions[Math.floor(Math.random() * denomOptions.length)];
-                } while (denom2 === denom1);
-
-                const lcd = (denom1 * denom2) / gcd(denom1, denom2);
-                const useMixed1 = Math.random() > 0.3;
-                const whole1 = useMixed1 ? Math.floor(Math.random() * 3) + 1 : 0;
-                const num1 = Math.floor(Math.random() * (denom1 - 1)) + 1;
-                const useMixed2 = Math.random() > 0.6;
-                const whole2 = useMixed2 ? Math.floor(Math.random() * 2) + 1 : 0;
-                const num2 = Math.floor(Math.random() * (denom2 - 1)) + 1;
-
-                const frac1InLcd = (whole1 * denom1 + num1) * (lcd / denom1);
-                const frac2InLcd = (whole2 * denom2 + num2) * (lcd / denom2);
-                const display1 = formatMixedNumber(whole1, num1, denom1);
-                const display2 = formatMixedNumber(whole2, num2, denom2);
-
-                if (op === 'frac+') {
-                    const resultNum = frac1InLcd + frac2InLcd;
-                    const resultWhole = Math.floor(resultNum / lcd);
-                    answer = resultWhole;
-                    display = `${display1} + ${display2} = ? (whole number part)`;
-                } else {
-                    let f1 = frac1InLcd, f2 = frac2InLcd;
-                    let d1 = display1, d2 = display2;
-                    if (f1 < f2) {
-                        [f1, f2] = [f2, f1];
-                        [d1, d2] = [d2, d1];
-                    }
-                    const resultNum = f1 - f2;
-                    const resultWhole = Math.floor(resultNum / lcd);
-                    answer = resultWhole;
-                    display = `${d1} − ${d2} = ? (whole number part)`;
-                }
-            }
-        } else if (grade === '6-9') {
-            const x = Math.floor(Math.random() * 10) + 1;
-            const a = Math.floor(Math.random() * 5) + 2;
-            const result = a * x;
-            display = `${a}x = ${result}, x = ?`;
-            answer = x;
-        } else if (grade === '10-12') {
-            const x = Math.floor(Math.random() * 10) + 2;
-            const n = x * x;
-            display = `x² = ${n}, x = ? (positive)`;
-            answer = x;
-        }
-
-        return { display, answer };
-    };
-
     const startGame = (grade) => {
         setSelectedGrade(grade);
         setScore(0);
@@ -223,7 +126,7 @@ const PvP = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (parseInt(userAnswer) === problem.answer) {
+        if (parseFloat(userAnswer) === problem.answer) {
             setScore(score + 10);
             setScoreDiff(10);
             setTimeout(() => setScoreDiff(null), 1000);
@@ -334,7 +237,7 @@ const PvP = () => {
 
     if (gameState === 'select') {
         return (
-            <div className="glass-panel animate-fade-in" style={{ maxWidth: '800px', margin: '0 auto', padding: '3rem', textAlign: 'center' }}>
+            <div className="glass-panel animate-fade-in" style={{ maxWidth: '900px', margin: '0 auto', padding: '3rem', textAlign: 'center' }}>
                 <div style={{ marginBottom: '2rem' }}>
                     <Swords size={56} style={{ color: 'var(--error)', marginBottom: '1rem' }} />
                     <h2 style={{ fontSize: '2.5rem', fontWeight: '700', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
@@ -356,13 +259,13 @@ const PvP = () => {
                     </p>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.85rem' }}>
                     {Object.entries(gradeConfigs).map(([key, config]) => (
                         <button
                             key={key}
                             onClick={() => startGame(key)}
                             style={{
-                                padding: '1.5rem',
+                                padding: '1.1rem 0.5rem',
                                 background: 'var(--bg-darker)',
                                 border: '3px solid var(--border)',
                                 borderRadius: 'var(--radius-md)',
@@ -380,9 +283,9 @@ const PvP = () => {
                                 e.currentTarget.style.transform = 'translateY(0)';
                             }}
                         >
-                            <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>{config.emoji}</div>
-                            <div style={{ color: 'var(--text-main)', fontWeight: '700', fontSize: '1.1rem', textTransform: 'uppercase' }}>{config.name}</div>
-                            <div style={{ color: config.color, fontSize: '0.9rem', marginTop: '0.5rem', fontWeight: '600' }}>
+                            <div style={{ fontSize: '2rem', marginBottom: '0.4rem' }}>{config.emoji}</div>
+                            <div style={{ color: 'var(--text-main)', fontWeight: '700', fontSize: '0.9rem', textTransform: 'uppercase' }}>{config.name}</div>
+                            <div style={{ color: config.color, fontSize: '0.8rem', marginTop: '0.35rem', fontWeight: '600' }}>
                                 ⏱ {Math.floor(config.duration / 60)} min
                             </div>
                         </button>
@@ -468,7 +371,7 @@ const PvP = () => {
                 </div>
 
                 <div style={{
-                    fontSize: 'clamp(1.75rem, 6vw, 2.5rem)',
+                    fontSize: 'clamp(1.25rem, 5vw, 2rem)',
                     fontWeight: '700',
                     marginBottom: '2rem',
                     fontFamily: 'monospace',
@@ -484,6 +387,7 @@ const PvP = () => {
                     <input
                         ref={inputRef}
                         type="number"
+                        step="any"
                         value={userAnswer}
                         onChange={(e) => setUserAnswer(e.target.value)}
                         placeholder="Answer"

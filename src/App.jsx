@@ -10,6 +10,7 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import PvP from './pages/PvP';
 import Leaderboard from './pages/Leaderboard';
+import HelpWithMath from './pages/HelpWithMath';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
             <Route path="signup" element={<Signup />} />
             <Route path="pvp" element={<PvP />} />
             <Route path="leaderboard" element={<Leaderboard />} />
+            <Route path="help" element={<HelpWithMath />} />
           </Route>
         </Routes>
         <Analytics />

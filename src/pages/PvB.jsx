@@ -1,39 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Check, X, ArrowLeft, Bot, User, Trophy, Swords } from 'lucide-react';
-
-// Grade configurations
-const gradeConfigs = {
-    '1-2': {
-        name: 'Grades 1-2',
-        emoji: '🌟',
-        timer: 3,
-        maxNum: 20,
-        operators: ['+', '-'],
-        color: 'var(--primary)'
-    },
-    '3-5': {
-        name: 'Grades 3-5',
-        emoji: '🚀',
-        timer: 4,
-        maxMult: 12,
-        operators: ['×', '÷'],
-        color: 'var(--secondary)'
-    },
-    '6-9': {
-        name: 'Grades 6-9',
-        emoji: '🔥',
-        timer: 5,
-        type: 'algebra',
-        color: 'var(--warning)'
-    },
-    '10-12': {
-        name: 'Grades 10-12',
-        emoji: '🏆',
-        timer: 7,
-        type: 'advanced',
-        color: 'var(--accent)'
-    }
-};
+import { gradeConfigs, generateProblem } from '../lib/gradeData';
 
 const PvB = () => {
     const [selectedGrade, setSelectedGrade] = useState(null);
@@ -48,53 +15,6 @@ const PvB = () => {
 
     const inputRef = useRef(null);
     const timerRef = useRef(null);
-
-    const generateProblem = (grade) => {
-        const config = gradeConfigs[grade];
-        let display, answer;
-
-        if (grade === '1-2') {
-            const op = config.operators[Math.floor(Math.random() * config.operators.length)];
-            let n1 = Math.floor(Math.random() * config.maxNum) + 1;
-            let n2 = Math.floor(Math.random() * config.maxNum) + 1;
-            if (op === '-' && n1 < n2) [n1, n2] = [n2, n1];
-            display = `${n1} ${op} ${n2}`;
-            answer = op === '+' ? n1 + n2 : n1 - n2;
-        } else if (grade === '3-5') {
-            const op = config.operators[Math.floor(Math.random() * config.operators.length)];
-            const n1 = Math.floor(Math.random() * config.maxMult) + 1;
-            const n2 = Math.floor(Math.random() * config.maxMult) + 1;
-            if (op === '×') {
-                display = `${n1} × ${n2}`;
-                answer = n1 * n2;
-            } else {
-                const product = n1 * n2;
-                display = `${product} ÷ ${n1}`;
-                answer = n2;
-            }
-        } else if (grade === '6-9') {
-            const x = Math.floor(Math.random() * 10) + 1;
-            const a = Math.floor(Math.random() * 5) + 2;
-            const result = a * x;
-            display = `${a}x = ${result}, x = ?`;
-            answer = x;
-        } else if (grade === '10-12') {
-            const rand = Math.floor(Math.random() * 2);
-            if (rand === 0) {
-                const x = Math.floor(Math.random() * 10) + 2;
-                const n = x * x;
-                display = `x² = ${n}, x = ? (positive)`;
-                answer = x;
-            } else {
-                const base = Math.floor(Math.random() * 4) + 2;
-                const exp = Math.floor(Math.random() * 3) + 2;
-                display = `${base}^${exp} = ?`;
-                answer = Math.pow(base, exp);
-            }
-        }
-
-        return { display, answer };
-    };
 
     const startRound = () => {
         const newProblem = generateProblem(selectedGrade);
@@ -153,7 +73,7 @@ const PvB = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (parseInt(userAnswer) === problem.answer) {
+        if (parseFloat(userAnswer) === problem.answer) {
             handleRoundEnd(true);
         } else {
             handleRoundEnd(false);
@@ -171,7 +91,7 @@ const PvB = () => {
     // Grade Selection Screen
     if (gameState === 'select') {
         return (
-            <div className="glass-panel animate-fade-in" style={{ maxWidth: '750px', margin: '0 auto', padding: '3rem', textAlign: 'center' }}>
+            <div className="glass-panel animate-fade-in" style={{ maxWidth: '900px', margin: '0 auto', padding: '3rem', textAlign: 'center' }}>
                 <div style={{ marginBottom: '2rem' }}>
                     <Bot size={56} style={{ color: 'var(--error)', marginBottom: '1rem' }} />
                     <h2 style={{ fontSize: '2.5rem', fontWeight: '700', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
@@ -180,13 +100,13 @@ const PvB = () => {
                     <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>Race against the bot! First to 2 wins!</p>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.85rem' }}>
                     {Object.entries(gradeConfigs).map(([key, config]) => (
                         <button
                             key={key}
                             onClick={() => startGame(key)}
                             style={{
-                                padding: '1.5rem',
+                                padding: '1.1rem 0.5rem',
                                 background: 'var(--bg-darker)',
                                 border: '3px solid var(--border)',
                                 borderRadius: 'var(--radius-md)',
@@ -204,12 +124,12 @@ const PvB = () => {
                                 e.currentTarget.style.transform = 'translateY(0)';
                             }}
                         >
-                            <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>{config.emoji}</div>
-                            <div style={{ color: 'var(--text-main)', fontWeight: '700', fontSize: '1.1rem', textTransform: 'uppercase' }}>{config.name}</div>
+                            <div style={{ fontSize: '2rem', marginBottom: '0.4rem' }}>{config.emoji}</div>
+                            <div style={{ color: 'var(--text-main)', fontWeight: '700', fontSize: '0.9rem', textTransform: 'uppercase' }}>{config.name}</div>
                             <div style={{
                                 color: config.color,
-                                fontSize: '0.9rem',
-                                marginTop: '0.5rem',
+                                fontSize: '0.8rem',
+                                marginTop: '0.35rem',
                                 fontWeight: '600',
                                 display: 'flex',
                                 alignItems: 'center',
@@ -312,7 +232,7 @@ const PvB = () => {
 
             {/* Problem */}
             <div style={{
-                fontSize: 'clamp(1.75rem, 6vw, 2.5rem)',
+                fontSize: 'clamp(1.25rem, 5vw, 2rem)',
                 fontWeight: '700',
                 marginBottom: '1.5rem',
                 fontFamily: 'monospace',
@@ -330,6 +250,7 @@ const PvB = () => {
                     <input
                         ref={inputRef}
                         type="number"
+                        step="any"
                         value={userAnswer}
                         onChange={(e) => setUserAnswer(e.target.value)}
                         placeholder="Answer"

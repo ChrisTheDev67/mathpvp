@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { LogIn, Mail, Lock, Gamepad2 } from 'lucide-react';
+import { LogIn, Mail, Lock, Gamepad2, User } from 'lucide-react';
 
 const Login = () => {
-    const [email, setEmail] = useState('');
+    const [identifier, setIdentifier] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -17,7 +17,7 @@ const Login = () => {
         setLoading(true);
 
         try {
-            await signIn(email, password);
+            await signIn(identifier, password);
             navigate('/');
         } catch (err) {
             setError(err.message || 'Failed to log in');
@@ -71,15 +71,15 @@ const Login = () => {
                         textTransform: 'uppercase',
                         letterSpacing: '0.5px'
                     }}>
-                        <Mail size={18} />Email
+                        <User size={18} />Nickname or Email
                     </label>
                     <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        type="text"
+                        value={identifier}
+                        onChange={(e) => setIdentifier(e.target.value)}
                         required
                         className="input"
-                        placeholder="you@example.com"
+                        placeholder="Your nickname or email"
                     />
                 </div>
 

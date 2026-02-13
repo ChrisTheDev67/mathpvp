@@ -24,7 +24,9 @@ const Signup = () => {
         setLoading(true);
 
         try {
-            await signUp(email, password, nickname);
+            // If no email, generate a placeholder one for Supabase
+            const finalEmail = email.trim() || `${nickname.toLowerCase().replace(/\s+/g, '')}${Date.now()}@mathpvp.local`;
+            await signUp(finalEmail, password, nickname);
             navigate('/');
         } catch (err) {
             setError(err.message || 'Failed to sign up');
@@ -102,13 +104,13 @@ const Signup = () => {
                         textTransform: 'uppercase',
                         letterSpacing: '0.5px'
                     }}>
-                        <Mail size={18} />Email
+                        <Mail size={18} />Email <span style={{ color: 'var(--text-muted)', fontWeight: '400', fontSize: '0.8rem' }}>(optional)</span>
                     </label>
                     <input
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        required
+                        required={false}
                         className="input"
                         placeholder="you@example.com"
                     />

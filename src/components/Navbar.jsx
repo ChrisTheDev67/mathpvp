@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, Calculator, User, Home, Bot, Swords, Trophy, LogIn, LogOut } from 'lucide-react';
+import { Menu, X, Calculator, User, Home, Bot, Swords, Trophy, BookOpen, LogIn, LogOut } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import './Navbar.css';
 
@@ -16,6 +16,7 @@ const Navbar = () => {
     { name: 'PvB', path: '/pvb', icon: <Bot size={18} /> },
     { name: 'Battle Royale', path: '/pvp', icon: <Swords size={18} /> },
     { name: 'Leaderboard', path: '/leaderboard', icon: <Trophy size={18} /> },
+    { name: 'Help', path: '/help', icon: <BookOpen size={18} /> },
     { name: 'About', path: '/about', icon: <div style={{ fontSize: '1.2rem', lineHeight: 1 }}>👋</div> },
   ];
 
