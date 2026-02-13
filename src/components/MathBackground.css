@@ -1,4 +1,4 @@
-/* Static Math Pattern Background - Performance Optimized */
+/* 3D Floating Math Background */
 .math-background {
     position: fixed;
     top: 0;
@@ -6,29 +6,85 @@
     right: 0;
     bottom: 0;
     z-index: -1;
-    pointer-events: none;
     overflow: hidden;
+    background: radial-gradient(circle at 50% 50%, #1a1a2e 0%, #16213e 100%);
+    perspective: 1000px;
+    pointer-events: none;
 }
 
-/* Simple gradient overlay - no animations */
+.math-3d-container {
+    position: absolute;
+    inset: -100px;
+    /* Oversize to prevent popping */
+    transform-style: preserve-3d;
+}
+
+.math-item {
+    position: absolute;
+    color: rgba(255, 255, 255, 0.1);
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    user-select: none;
+    will-change: transform, opacity;
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+}
+
+/* Depth variants */
+.depth-1 {
+    z-index: 1;
+    filter: blur(4px);
+    opacity: 0.05;
+}
+
+.depth-2 {
+    z-index: 2;
+    filter: blur(2px);
+    opacity: 0.1;
+}
+
+.depth-3 {
+    z-index: 3;
+    filter: blur(0px);
+    opacity: 0.15;
+}
+
+.depth-4 {
+    z-index: 4;
+    filter: blur(0px);
+    opacity: 0.2;
+    text-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+}
+
+@keyframes float3D {
+    0% {
+        transform: translate3d(0, 0, 0) rotate3d(1, 1, 1, 0deg);
+    }
+
+    25% {
+        transform: translate3d(50px, -50px, 50px) rotate3d(1, 1, 1, 90deg);
+    }
+
+    50% {
+        transform: translate3d(0, -100px, 0) rotate3d(1, 1, 1, 180deg);
+    }
+
+    75% {
+        transform: translate3d(-50px, -50px, -50px) rotate3d(1, 1, 1, 270deg);
+    }
+
+    100% {
+        transform: translate3d(0, 0, 0) rotate3d(1, 1, 1, 360deg);
+    }
+}
+
+/* Glassmorphism Overlay */
 .math-overlay {
     position: absolute;
     inset: 0;
     background:
-        radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.08) 0%, transparent 40%),
-        radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 40%),
-        radial-gradient(circle at 50% 50%, rgba(34, 211, 238, 0.05) 0%, transparent 50%);
-}
-
-/* Static decorative elements instead of floating animations */
-.math-pattern {
-    position: absolute;
-    inset: 0;
-    opacity: 0.03;
-    background-image:
-        repeating-linear-gradient(45deg,
-            transparent,
-            transparent 50px,
-            rgba(0, 0, 0, 0.03) 50px,
-            rgba(0, 0, 0, 0.03) 51px);
+        radial-gradient(circle at 15% 50%, rgba(79, 70, 229, 0.12) 0%, transparent 50%),
+        radial-gradient(circle at 85% 30%, rgba(236, 72, 153, 0.12) 0%, transparent 50%);
+    backdrop-filter: blur(1px);
+    /* Slight blur to blend remote elements */
+    z-index: 0;
 }
