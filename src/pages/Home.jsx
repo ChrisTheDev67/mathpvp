@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Zap, Target, Trophy, Bot, Swords } from 'lucide-react';
+import { ArrowRight, Zap, Target, Trophy, Bot, Swords, Crosshair } from 'lucide-react';
 
 const Home = () => {
     return (
@@ -22,6 +22,9 @@ const Home = () => {
                     </Link>
                     <Link to="/pvb" className="btn-secondary">
                         <Bot size={22} /> vs Bot
+                    </Link>
+                    <Link to="/mission" className="btn-secondary" style={{ background: 'rgba(233, 69, 96, 0.15)', borderColor: '#e94560', color: '#ff6b81' }}>
+                        <Crosshair size={22} /> Mission
                     </Link>
                 </div>
             </div>
@@ -50,6 +53,12 @@ const Home = () => {
                     title="Battle Royale"
                     desc="Daily challenge with leaderboard rankings"
                     color="var(--accent)"
+                />
+                <FeatureCard
+                    icon={<Crosshair size={32} />}
+                    title="Math Mission"
+                    desc="Spy heist adventure with comic-style action"
+                    color="#e94560"
                 />
             </div>
 

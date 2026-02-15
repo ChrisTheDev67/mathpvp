@@ -48,4 +48,4 @@ const MathBackground = () => {
     );
 };
 
-export default MathBackground;
+export default React.memo(MathBackground);

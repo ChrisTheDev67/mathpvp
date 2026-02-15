@@ -11,6 +11,9 @@ import Signup from './pages/Signup';
 import PvP from './pages/PvP';
 import Leaderboard from './pages/Leaderboard';
 import HelpWithMath from './pages/HelpWithMath';
+import MathMission from './pages/MathMission';
+import Bank from './pages/Bank';
+import Admin from './pages/Admin';
 
 function App() {
   return (
@@ -27,6 +30,9 @@ function App() {
             <Route path="pvp" element={<PvP />} />
             <Route path="leaderboard" element={<Leaderboard />} />
             <Route path="help" element={<HelpWithMath />} />
+            <Route path="mission" element={<MathMission />} />
+            <Route path="bank" element={<Bank />} />
+            <Route path="admin" element={<Admin />} />
           </Route>
         </Routes>
         <Analytics />

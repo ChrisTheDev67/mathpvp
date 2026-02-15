@@ -4,7 +4,7 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 // Admin emails — these accounts can delete students from the leaderboard
 const ADMIN_EMAILS = [
-    // Add your email here, e.g. 'youremail@gmail.com'
+    'chris.vkim@icloud.com',
 ];
 
 export { SUPABASE_URL, SUPABASE_ANON_KEY, ADMIN_EMAILS };
