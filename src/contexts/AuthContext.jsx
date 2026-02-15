@@ -74,29 +74,28 @@ export const AuthProvider = ({ children }) => {
 
         // If identifier doesn't look like an email, treat it as a nickname
         if (!loginEmail.includes('@')) {
-            // Try exact case-insensitive match first
-            let { data: profileData, error: profileErr } = await supabase
+            // Try exact match first (handles underscores correctly)
+            let { data: profileData } = await supabase
                 .from('profiles')
                 .select('email')
-                .ilike('nickname', loginEmail)
+                .eq('nickname', loginEmail)
                 .limit(1);
 
-            // If array result, grab first match
+            // If not found, try case-insensitive with escaped special chars
+            if (!profileData || profileData.length === 0) {
+                const escaped = loginEmail.replace(/_/g, '\\_').replace(/%/g, '\\%');
+                const { data: ilikeData } = await supabase
+                    .from('profiles')
+                    .select('email')
+                    .ilike('nickname', escaped)
+                    .limit(1);
+                profileData = ilikeData;
+            }
+
             if (profileData && profileData.length > 0) {
                 loginEmail = profileData[0].email;
             } else {
-                // Also try with wildcard in case of partial match
-                const { data: fuzzyData } = await supabase
-                    .from('profiles')
-                    .select('email')
-                    .ilike('nickname', `%${loginEmail}%`)
-                    .limit(1);
-
-                if (fuzzyData && fuzzyData.length > 0) {
-                    loginEmail = fuzzyData[0].email;
-                } else {
-                    throw new Error('No account found with that nickname. Check your spelling and try again.');
-                }
+                throw new Error('No account found with that nickname. Check your spelling and try again.');
             }
         }
 
